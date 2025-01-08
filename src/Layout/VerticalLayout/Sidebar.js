@@ -1,17 +1,16 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import sidebarData from "./SidebarData";
-//Simple bar
 import SimpleBar from "simplebar-react";
-// MetisMenu
 import MetisMenu from "metismenujs";
 import withRouter from "../../components/Common/withRouter";
 import { Link } from "react-router-dom";
-//i18n
 import { withTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+
 const Sidebar = (props) => {
   const ref = useRef();
-  const activateParentDropdown = useCallback(item => {
+  const activateParentDropdown = useCallback((item) => {
     item.classList.add("active");
     const parent = item.parentElement;
     const parent2El = parent.childNodes[1];
@@ -22,18 +21,18 @@ const Sidebar = (props) => {
       parent.classList.add("mm-active");
       const parent2 = parent.parentElement;
       if (parent2) {
-        parent2.classList.add("mm-show"); // ul tag
-        const parent3 = parent2.parentElement; // li tag
+        parent2.classList.add("mm-show");
+        const parent3 = parent2.parentElement;
         if (parent3) {
-          parent3.classList.add("mm-active"); // li
-          parent3.childNodes[0].classList.add("mm-active"); //a
-          const parent4 = parent3.parentElement; // ul
+          parent3.classList.add("mm-active");
+          parent3.childNodes[0].classList.add("mm-active");
+          const parent4 = parent3.parentElement;
           if (parent4) {
-            parent4.classList.add("mm-show"); // ul
+            parent4.classList.add("mm-show");
             const parent5 = parent4.parentElement;
             if (parent5) {
-              parent5.classList.add("mm-show"); // li
-              parent5.childNodes[0].classList.add("mm-active"); // a tag
+              parent5.classList.add("mm-show");
+              parent5.childNodes[0].classList.add("mm-active");
             }
           }
         }
@@ -44,7 +43,8 @@ const Sidebar = (props) => {
     scrollElement(item);
     return false;
   }, []);
-  const removeActivation = items => {
+
+  const removeActivation = (items) => {
     for (var i = 0; i < items.length; ++i) {
       var item = items[i];
       const parent = items[i].parentElement;
@@ -65,15 +65,15 @@ const Sidebar = (props) => {
           parent2.classList.remove("mm-show");
           const parent3 = parent2.parentElement;
           if (parent3) {
-            parent3.classList.remove("mm-active"); // li
+            parent3.classList.remove("mm-active");
             parent3.childNodes[0].classList.remove("mm-active");
-            const parent4 = parent3.parentElement; // ul
+            const parent4 = parent3.parentElement;
             if (parent4) {
-              parent4.classList.remove("mm-show"); // ul
+              parent4.classList.remove("mm-show");
               const parent5 = parent4.parentElement;
               if (parent5) {
-                parent5.classList.remove("mm-show"); // li
-                parent5.childNodes[0].classList.remove("mm-active"); // a tag
+                parent5.classList.remove("mm-show");
+                parent5.childNodes[0].classList.remove("mm-active");
               }
             }
           }
@@ -81,6 +81,7 @@ const Sidebar = (props) => {
       }
     }
   };
+
   const activeMenu = useCallback(() => {
     const pathName = props.router.location.pathname;
     const fullPath = pathName;
@@ -97,21 +98,21 @@ const Sidebar = (props) => {
     if (matchingMenuItem) {
       activateParentDropdown(matchingMenuItem);
     }
-  }, [
-    props.router.location.pathname,
-    activateParentDropdown,
-  ]);
+  }, [props.router.location.pathname, activateParentDropdown]);
+
   useEffect(() => {
     ref.current.recalculate();
   }, []);
+
   useEffect(() => {
     new MetisMenu("#side-menu-item");
     activeMenu();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   useEffect(() => {
     activeMenu();
   }, [activeMenu]);
+
   function scrollElement(item) {
     if (item) {
       const currentPosition = item.offsetTop;
@@ -120,73 +121,82 @@ const Sidebar = (props) => {
       }
     }
   }
+
+  const userRole = useSelector((state) => {
+    return state.auth?.user?.role || state.Layout?.user?.role || 'defaultRole';
+  });
+
+  const renderSidebarItems = (items) => {
+    return items.map((item, key) => (
+      <React.Fragment key={key}>
+        {item.isMainMenu ? (
+          <li className="menu-title">{props.t(item.label)}</li>
+        ) : (
+          <li key={key}>
+            <Link
+              to={item.url ? item.url : "/#"}
+              className={
+                item.issubMenubadge || item.isHasArrow
+                  ? " "
+                  : "has-arrow"
+              }
+            >
+              <i
+                className={item.icon}
+                style={{ marginRight: "5px" }}
+              ></i>
+              {item.issubMenubadge && (
+                <span
+                  className={
+                    "badge rounded-pill float-end " + item.bgcolor
+                  }
+                >
+                  {" "}
+                  {item.badgeValue}{" "}
+                </span>
+              )}
+              <span>{props.t(item.label)}</span>
+            </Link>
+            {item.subItem && (
+              <ul className="sub-menu">
+                {item.subItem.map((subItem, subKey) => (
+                  <li key={subKey}>
+                    <Link
+                      to={subItem.link}
+                      className={
+                        subItem.subMenu && "has-arrow waves-effect"
+                      }
+                    >
+                      {props.t(subItem.sublabel)}
+                    </Link>
+                    {subItem.subMenu && (
+                      <ul className="sub-menu">
+                        {subItem.subMenu.map((subSubItem, subSubKey) => (
+                          <li key={subSubKey}>
+                            <Link to="#">
+                              {props.t(subSubItem.title)}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        )}
+      </React.Fragment>
+    ));
+  };
+
   return (
     <React.Fragment>
       <div className="vertical-menu">
         <SimpleBar className="h-100" ref={ref}>
           <div id="sidebar-menu">
             <ul className="metismenu list-unstyled" id="side-menu-item">
-              {(sidebarData || []).map((item, key) => (
-                <React.Fragment key={key}>
-                  {item.isMainMenu ? (
-                    <li className="menu-title">{props.t(item.label)}</li>
-                  ) : (
-                    <li key={key}>
-                      <Link
-                        to={item.url ? item.url : "/#"}
-                        className={
-                          (item.issubMenubadge || item.isHasArrow)
-                            ? " "
-                            : "has-arrow"
-                        }
-                      >
-                        <i
-                          className={item.icon}
-                          style={{ marginRight: "5px" }}
-                        ></i>
-                        {item.issubMenubadge && (
-                          <span
-                            className={
-                              "badge rounded-pill float-end " + item.bgcolor
-                            }
-                          >
-                            {" "}
-                            {item.badgeValue}{" "}
-                          </span>
-                        )}
-                        <span>{props.t(item.label)}</span>
-                      </Link>
-                      {item.subItem && (
-                        <ul className="sub-menu">
-                          {item.subItem.map((item, key) => (
-                            <li key={key}>
-                              <Link
-                                to={item.link}
-                                className={
-                                  item.subMenu && "has-arrow waves-effect"
-                                }
-                              >
-                                {props.t(item.sublabel)}
-                              </Link>
-                              {item.subMenu && (
-                                <ul className="sub-menu">
-                                  {item.subMenu.map((item, key) => (
-                                    <li key={key}>
-                                      <Link to="#">
-                                        {props.t(item.title)}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  )}
-                </React.Fragment>
-              ))}
+              {renderSidebarItems(sidebarData[userRole] || [])}
             </ul>
           </div>
         </SimpleBar>
@@ -194,8 +204,11 @@ const Sidebar = (props) => {
     </React.Fragment>
   );
 };
+
 Sidebar.propTypes = {
   location: PropTypes.object,
   t: PropTypes.any,
 };
+
 export default withRouter(withTranslation()(Sidebar));
+

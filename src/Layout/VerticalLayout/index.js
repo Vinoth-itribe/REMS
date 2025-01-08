@@ -58,25 +58,17 @@ const Layout = props => {
     }
   };
 
-  //hides right sidebar on body click
   const hideRightbar = useCallback((event) => {
     var rightbar = document.getElementById("right-bar");
-    //if clicked in inside right bar, then do nothing
     if (rightbar && rightbar.contains(event.target)) {
       return;
     } else {
-      //if clicked in outside of rightbar then fire action for hide rightbar
       dispatch(showRightSidebarAction(false));
     }
   }, [dispatch]);
 
-  /*
-  layout  settings
-  */
-
   useEffect(() => {
     if (
-      // layoutTypes ||
       layoutModeTypes ||
       leftSideBarTheme ||
       layoutWidth ||
@@ -92,7 +84,6 @@ const Layout = props => {
       dispatch(changeTopbarTheme(topbarTheme));
     }
   }, [
-    // layoutTypes,
     layoutModeTypes,
     leftSideBarTheme,
     layoutWidth,
@@ -101,47 +92,12 @@ const Layout = props => {
     dispatch]);
 
   useEffect(() => {
-    //init body click event fot toggle rightbar
     document.body.addEventListener("click", hideRightbar, true);
   }, [hideRightbar]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  // useEffect(() => {
-  //   dispatch(changeLayout("vertical"));
-  // }, [dispatch]);
-
-  // useEffect(() => {
-  //   if (layoutModeTypes) {
-  //     dispatch(changeLayoutMode(layoutModeTypes));
-  //   }
-  // }, [layoutModeTypes, dispatch]);
-
-  // useEffect(() => {
-  //   if (leftSideBarTheme) {
-  //     dispatch(changeSidebarTheme(leftSideBarTheme));
-  //   }
-  // }, [leftSideBarTheme, dispatch]);
-
-  // useEffect(() => {
-  //   if (layoutWidth) {
-  //     dispatch(changeLayoutWidth(layoutWidth));
-  //   }
-  // }, [layoutWidth, dispatch]);
-
-  // useEffect(() => {
-  //   if (leftSideBarType) {
-  //     dispatch(changeSidebarType(leftSideBarType));
-  //   }
-  // }, [leftSideBarType, dispatch]);
-
-  // useEffect(() => {
-  //   if (topbarTheme) {
-  //     dispatch(changeTopbarTheme(topbarTheme));
-  //   }
-  // }, [topbarTheme, dispatch]);
 
   return (
     <React.Fragment>
@@ -176,3 +132,4 @@ Layout.propTypes = {
 };
 
 export default withRouter(Layout);
+
