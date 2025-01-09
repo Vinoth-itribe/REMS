@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import sidebarData from "./SidebarData";
 import SimpleBar from "simplebar-react";
@@ -6,10 +6,18 @@ import MetisMenu from "metismenujs";
 import withRouter from "../../components/Common/withRouter";
 import { Link } from "react-router-dom";
 import { withTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 
 const Sidebar = (props) => {
   const ref = useRef();
+  const [userRole, setUserRole] = useState('defaultRole');
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("authUser"));
+    if (user && user.role) {
+      setUserRole(user.role);
+    }
+  }, []);
+
   const activateParentDropdown = useCallback((item) => {
     item.classList.add("active");
     const parent = item.parentElement;
@@ -122,72 +130,8 @@ const Sidebar = (props) => {
     }
   }
 
-  const userRole = useSelector((state) => {
-    return state.auth?.user?.role || state.Layout?.user?.role || 'defaultRole';
-  });
-
-  const renderSidebarItems = (items) => {
-    return items.map((item, key) => (
-      <React.Fragment key={key}>
-        {item.isMainMenu ? (
-          <li className="menu-title">{props.t(item.label)}</li>
-        ) : (
-          <li key={key}>
-            <Link
-              to={item.url ? item.url : "/#"}
-              className={
-                item.issubMenubadge || item.isHasArrow
-                  ? " "
-                  : "has-arrow"
-              }
-            >
-              <i
-                className={item.icon}
-                style={{ marginRight: "5px" }}
-              ></i>
-              {item.issubMenubadge && (
-                <span
-                  className={
-                    "badge rounded-pill float-end " + item.bgcolor
-                  }
-                >
-                  {" "}
-                  {item.badgeValue}{" "}
-                </span>
-              )}
-              <span>{props.t(item.label)}</span>
-            </Link>
-            {item.subItem && (
-              <ul className="sub-menu">
-                {item.subItem.map((subItem, subKey) => (
-                  <li key={subKey}>
-                    <Link
-                      to={subItem.link}
-                      className={
-                        subItem.subMenu && "has-arrow waves-effect"
-                      }
-                    >
-                      {props.t(subItem.sublabel)}
-                    </Link>
-                    {subItem.subMenu && (
-                      <ul className="sub-menu">
-                        {subItem.subMenu.map((subSubItem, subSubKey) => (
-                          <li key={subSubKey}>
-                            <Link to="#">
-                              {props.t(subSubItem.title)}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        )}
-      </React.Fragment>
-    ));
+  const filterSidebarItems = (items, role) => {
+    return items.filter(item => !item.roles || item.roles.includes(role));
   };
 
   return (
@@ -196,7 +140,67 @@ const Sidebar = (props) => {
         <SimpleBar className="h-100" ref={ref}>
           <div id="sidebar-menu">
             <ul className="metismenu list-unstyled" id="side-menu-item">
-              {renderSidebarItems(sidebarData[userRole] || [])}
+              {filterSidebarItems(sidebarData, userRole).map((item, key) => (
+                <React.Fragment key={key}>
+                  {item.isMainMenu ? (
+                    <li className="menu-title">{props.t(item.label)}</li>
+                  ) : (
+                    <li key={key}>
+                      <Link
+                        to={item.url ? item.url : "/#"}
+                        className={
+                          item.issubMenubadge || item.isHasArrow
+                            ? " "
+                            : "has-arrow"
+                        }
+                      >
+                        <i
+                          className={item.icon}
+                          style={{ marginRight: "5px" }}
+                        ></i>
+                        {item.issubMenubadge && (
+                          <span
+                            className={
+                              "badge rounded-pill float-end " + item.bgcolor
+                            }
+                          >
+                            {" "}
+                            {item.badgeValue}{" "}
+                          </span>
+                        )}
+                        <span>{props.t(item.label)}</span>
+                      </Link>
+                      {item.subItem && (
+                        <ul className="sub-menu">
+                          {item.subItem.map((subItem, subKey) => (
+                            <li key={subKey}>
+                              <Link
+                                to={subItem.link}
+                                className={
+                                  subItem.subMenu && "has-arrow waves-effect"
+                                }
+                              >
+                                {props.t(subItem.sublabel)}
+                              </Link>
+                              {subItem.subMenu && (
+                                <ul className="sub-menu">
+                                  {subItem.subMenu.map((subSubItem, subSubKey) => (
+                                    <li key={subSubKey}>
+                                      <Link to="#">
+                                        {props.t(subSubItem.title)}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  )}
+                </React.Fragment>
+              ))}
             </ul>
           </div>
         </SimpleBar>

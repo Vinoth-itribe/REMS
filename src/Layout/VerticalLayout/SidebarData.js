@@ -2,13 +2,14 @@ const SidebarData = [
     {
         label: "Menu",
         isMainMenu: true,
+
     },
     {
         label: "Overview",
         icon: "mdi mdi-view-dashboard-outline",
         url: "/overview",
         isHasArrow: true,
-        roles: ["propertyOwner",],
+        roles: ["propertyOwner", "serviceProvider"],
     },
     {
         label: "Properties",
